@@ -10,8 +10,8 @@
         public DateTime FechaEstimado { get; set; }
         public DateTime FechaCreacion { get; set; }
 
-        public Producto producto { get; set; } = null!;
-        public EstadoCosecha estadoCosecha = null!;
+        public Producto Producto { get; set; } = null!;
+        public EstadoCosecha EstadoCosecha = null!;
         
 
 

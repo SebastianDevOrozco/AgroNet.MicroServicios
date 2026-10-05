@@ -1,4 +1,21 @@
+using Catalogo.Api.Data;
+using Catalogo.Api.Mapping;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// -------------------------------
+//  Configurar conexión a MySQL
+// -------------------------------
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
+// --------------------------------
+//  Registro de AutoMapper
+// --------------------------------
+
+//builder.Services.AddAutoMapper(config => config.AddProfile<MappingProfile>());
 
 // Add services to the container.
 

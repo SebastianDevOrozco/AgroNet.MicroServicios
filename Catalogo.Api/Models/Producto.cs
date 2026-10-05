@@ -9,9 +9,9 @@
         public string Descripcion {  get; set; } = string.Empty;
         public string ImagenUrl { get; set; } = string.Empty;
 
-        public Categoria categoria { get; set; } = null!;
-        public UnidadMedida unidadMedida { get; set; } = null!;
-        public ICollection<Cosecha> cosechas { get; set; } = new HashSet<Cosecha>();
+        public Categoria Categoria { get; set; } = null!;
+        public UnidadMedida UnidadMedida { get; set; } = null!;
+        public ICollection<Cosecha> Cosechas { get; set; } = new HashSet<Cosecha>();
 
     }
 }

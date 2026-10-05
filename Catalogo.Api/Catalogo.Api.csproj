@@ -28,7 +28,6 @@
     <Folder Include="Middleware\" />
     <Folder Include="Interfaces\" />
     <Folder Include="Dtos\" />
-    <Folder Include="Mapping\" />
     <Folder Include="Services\" />
   </ItemGroup>
 
