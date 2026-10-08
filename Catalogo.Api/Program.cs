@@ -1,6 +1,13 @@
 using Catalogo.Api.Data;
+using Catalogo.Api.Interfaces.Cosechas;
 using Catalogo.Api.Mapping;
+using Catalogo.Api.Services.Cosechas;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Security.Principal;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,11 +18,84 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
+
+// -------------------------------
+//  Configurar JWT
+// -------------------------------
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(key)
+    };
+});
+
+
+// --------------------------------
+// Registro de servicios personalizados
+// --------------------------------
+
+builder.Services.AddScoped<ICosechaService, CosechaService>();
+
+
 // --------------------------------
 //  Registro de AutoMapper
 // --------------------------------
 
-//builder.Services.AddAutoMapper(config => config.AddProfile<MappingProfile>());
+builder.Services.AddAutoMapper(config => config.AddProfile<MappingProfile>());
+
+builder.Services.AddHttpContextAccessor();
+
+// 2. Registrar AutoMapper asegurando que escuche las dependencias de la solución
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+// --------------------------------
+// Swagger + Configuración JWT
+// --------------------------------
+// Swagger permite probar la API desde el navegador
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Agronet Identity API", Version = "v1" });
+
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "Autenticación JWT. Escribe la palabra 'Bearer' seguida de un espacio y tu token.",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 // Add services to the container.
 
@@ -25,6 +105,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// --------------------------------
+// Registrar el middleware de excepciones DE PRIMERO en el pipeline
+// --------------------------------
+app.UseMiddleware<Catalogo.Api.Middleware.ErrorsMiddleware>();
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
