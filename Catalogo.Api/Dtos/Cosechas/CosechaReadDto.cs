@@ -2,6 +2,7 @@
 {
     public class CosechaReadDto
     {
+        public int Id { get; set; }
         public string UsuarioNombre { get; set; } = string.Empty;
         public string ProductoNombre { get; set; } = string.Empty;
         public string EstadoCosechaNombre { get; set; } = string.Empty;

@@ -30,27 +30,33 @@ namespace Catalogo.Api.Controllers
         
 
         [HttpPost]
+        [Authorize(Roles = "1")]
         public async Task<ActionResult<CosechaReadDto>> RegistrarCosecha(CosechaCreateDto cosechaCreateDto)
         {
             //le asigno el claim a la variable usuarioId
             int usuarioId = ObtenerUsuarioIdDelToken();
             
-
-
             //usamos el metodo del servicio para crear la cosecha
-            var NuevaCosecha = await _cosechaService.CrearCosecha(1, cosechaCreateDto);
+            var NuevaCosecha = await _cosechaService.CrearCosecha(usuarioId, cosechaCreateDto);
 
             return Ok(NuevaCosecha);
         }
 
         [HttpGet]
+        [Authorize(Roles = "1")]
         public async Task<ActionResult<IEnumerable<CosechaReadDto>>> VerTodasLasCosechas()
         {
+            var usuarioId = ObtenerUsuarioIdDelToken();
 
-            //le asignamos el claim a la variable usuarioId
-            //int usuarioId = ObtenerUsuarioIdDelToken();
+            var cosechas = await _cosechaService.ObtenerCosechasDelUsuario(usuarioId);
 
-            var cosechas = await _cosechaService.ObtenerCosechasDelUsuario(1);
+            return Ok(cosechas);
+        }
+
+        [HttpGet("Catalogo")]
+        public async Task<ActionResult<IEnumerable<CosechaReadDto>>> CatalogoCosechas([FromQuery] string? producto, [FromQuery] decimal? precioMin, [FromQuery] decimal? precioMax)
+        {
+            var cosechas = await _cosechaService.CatalogoDeCosechas(producto, precioMin, precioMax);
 
             return Ok(cosechas);
         }

@@ -10,5 +10,6 @@ namespace Catalogo.Api.Interfaces.Cosechas
 
         //Leer
         Task<IEnumerable<CosechaReadDto>> ObtenerCosechasDelUsuario(int usuarioId);
+        Task<IEnumerable<CosechaReadDto>> CatalogoDeCosechas(string? producto, decimal? precioMin, decimal? precioMax);
     }
 }

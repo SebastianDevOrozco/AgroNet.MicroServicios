@@ -4,6 +4,7 @@ using Catalogo.Api.Dtos.Cosechas;
 using Catalogo.Api.Interfaces.Cosechas;
 using Catalogo.Api.Models;
 using Microsoft.EntityFrameworkCore;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Catalogo.Api.Services.Cosechas
 {
@@ -54,6 +55,37 @@ namespace Catalogo.Api.Services.Cosechas
 
             //mapeamos la entidad completa cosechas para convertirla en la entidad DTO cosehasDto
             return _Mapper.Map<IEnumerable<CosechaReadDto>>(cosechas);
+        }
+
+        public async Task<IEnumerable<CosechaReadDto>> CatalogoDeCosechas(string? producto, decimal? precioMin, decimal? precioMax)
+        {
+            //esta consulta base me traera las cosechas disponibles, en crecimiento y con una cantidad disponible mayor a 0;
+            var Query = _DBcontext.Cosechas
+                .Include(c => c.Producto)
+                .Include(c => c.EstadoCosecha)
+                .Where(c => (c.IdEstadoCosecha == 1 || c.IdEstadoCosecha == 2) && c.Cantidad > 0)
+                .AsQueryable(); // Use .AsQueryable() para no ir directamenta a la base de datos
+
+            //Verifico si el usuario lleno los filtros
+            if (!string.IsNullOrWhiteSpace(producto))
+                Query = Query.Where(c => c.Producto.Nombre.Contains(producto));   //.Contains() es el equivalente a usar "LIKE '%palabra%'" en SQL
+
+
+            if (precioMin.HasValue)
+            {
+                Query = Query.Where(c => c.PrecioUnidad >= precioMin.Value);
+            }
+
+            if (precioMax.HasValue)
+            {
+                Query = Query.Where(c => c.PrecioUnidad <= precioMax.Value);
+            }
+
+            //Despues de verificar si el usuario lleno los filtros, ejecutamos la consulta
+            var cosechasFiltradas = await Query.ToListAsync();
+
+
+            return _Mapper.Map<IEnumerable<CosechaReadDto>>(cosechasFiltradas);
         }
 
         //METODOS PRIVADOS
