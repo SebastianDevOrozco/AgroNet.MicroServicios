@@ -14,7 +14,9 @@ namespace Catalogo.Api.Mapping
             CreateMap<CosechaCreateDto, Cosecha>();
             //Mapeo Cosecha --> CosechaReadDto
             CreateMap<Cosecha, CosechaReadDto>()
-                .ForMember(dest => dest.UsuarioNombre, opt => opt.MapFrom<NombreUsuarioResolver>()); 
+                .ForMember(dest => dest.UsuarioNombre, opt => opt.MapFrom<NombreUsuarioResolver>());
+            //Mapeo CosechaUpdateDto --> Cosecha
+            CreateMap<CosechaUpdateDto, Cosecha>();
 
 
 

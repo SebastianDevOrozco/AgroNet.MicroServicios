@@ -61,5 +61,16 @@ namespace Catalogo.Api.Controllers
             return Ok(cosechas);
         }
 
+        [HttpPut("{cosechaId}")]
+        [Authorize(Roles = "1")]
+        public async Task<ActionResult<CosechaReadDto>> ActualizarCosecha(int cosechaId, CosechaUpdateDto cosechaUpdateDto)
+        {
+            int usuarioId = ObtenerUsuarioIdDelToken();
+
+            var cosecha = await _cosechaService.ActualizarCosecha(usuarioId, cosechaId, cosechaUpdateDto);
+
+            return Ok(cosecha);
+        }
+
     }
 }

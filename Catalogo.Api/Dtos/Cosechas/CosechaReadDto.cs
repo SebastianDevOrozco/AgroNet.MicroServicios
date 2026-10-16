@@ -5,6 +5,7 @@
         public int Id { get; set; }
         public string UsuarioNombre { get; set; } = string.Empty;
         public string ProductoNombre { get; set; } = string.Empty;
+        public string ProductoImagenUrl {  get; set; } = string.Empty;
         public string EstadoCosechaNombre { get; set; } = string.Empty;
         public decimal Cantidad { get; set; }
         public decimal PrecioUnidad { get; set; }

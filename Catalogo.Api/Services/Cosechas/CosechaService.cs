@@ -88,6 +88,28 @@ namespace Catalogo.Api.Services.Cosechas
             return _Mapper.Map<IEnumerable<CosechaReadDto>>(cosechasFiltradas);
         }
 
+        public async Task<CosechaReadDto> ActualizarCosecha(int usuarioId, int cosechaId, CosechaUpdateDto cosechaUpdateDto)
+        {
+            await ValidacionProducto(cosechaUpdateDto.IdProducto);
+            await ValidacionEstadoCosecha(cosechaUpdateDto.IdEstadoCosecha);
+
+            var cosechaExistente = await _DBcontext.Cosechas
+               .Where(c => c.IdUsuario == usuarioId && c.Id == cosechaId)
+               .FirstOrDefaultAsync();
+
+            if (cosechaExistente == null) throw new KeyNotFoundException($"No existe la cosecha");
+
+            _Mapper.Map(cosechaUpdateDto, cosechaExistente);
+            await _DBcontext.SaveChangesAsync();
+
+            //Incluyo referencias de mapeo
+            await _DBcontext.Entry(cosechaExistente).Reference(c => c.Producto).LoadAsync();
+            await _DBcontext.Entry(cosechaExistente).Reference(c => c.EstadoCosecha).LoadAsync();
+
+            return _Mapper.Map<CosechaReadDto>(cosechaExistente);
+        }
+
+
         //METODOS PRIVADOS
 
         private async Task ValidacionProducto(int IdProducto)
@@ -104,7 +126,7 @@ namespace Catalogo.Api.Services.Cosechas
                 .AnyAsync(e => e.Id == IdEstado);
 
             if (!estado)
-                throw new KeyNotFoundException($"El producto con el ID {IdEstado} No Existe");
+                throw new KeyNotFoundException($"El estado con el ID {IdEstado} No Existe");
         }
     }
 }
